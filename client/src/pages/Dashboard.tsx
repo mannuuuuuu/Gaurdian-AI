@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { useRoute, useLocation } from "wouter";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
@@ -7,6 +7,7 @@ import StatusCard from "@/components/dashboard/StatusCard";
 import ContractWatchlist from "@/components/dashboard/ContractWatchlist";
 import AIAlertPanel from "@/components/dashboard/AIAlertPanel";
 import EventLog from "@/components/dashboard/EventLog";
+import ContractScanProgress from "@/components/dashboard/ContractScanProgress";
 import { getContracts, getActiveAlerts, getAiUsage, analyzeContract, getMonitorStatus } from "@/lib/blockchain";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +22,9 @@ import {
   DialogFooter
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+
+// Lazy-loaded components
+const ContractScanResults = lazy(() => import('@/components/dashboard/ContractScanResults'));
 
 const Dashboard = () => {
   const { toast } = useToast();
@@ -76,6 +80,9 @@ const Dashboard = () => {
   const [scanDialogOpen, setScanDialogOpen] = useState(false);
   const [contractAddress, setContractAddress] = useState('');
   const [addressError, setAddressError] = useState('');
+  const [scanningState, setScanningState] = useState<'idle' | 'scanning' | 'results'>('idle');
+  const [contractSource, setContractSource] = useState<string | null>(null);
+  const [scanResults, setScanResults] = useState<any>(null);
   
   const handleScanButtonClick = () => {
     setScanDialogOpen(true);
@@ -105,6 +112,44 @@ const Dashboard = () => {
     return '';
   };
   
+  const handleQuillScanComplete = async () => {
+    try {
+      // Import and use functions from the quillai.ts
+      const { scanContract, fetchContractSource } = await import('@/lib/quillai');
+      
+      // Fetch contract source code
+      const source = await fetchContractSource(contractAddress);
+      setContractSource(source);
+      
+      // Run the scan and get results
+      const results = await scanContract(contractAddress);
+      setScanResults(results);
+      
+      // Update state to show results
+      setScanningState('results');
+      
+      // Show success notification
+      toast({
+        title: "Scan completed",
+        description: `Security analysis for ${contractAddress.substring(0, 6)}...${contractAddress.substring(38)} is ready`,
+        duration: 3000,
+      });
+      
+      // Refresh alerts in case scan generated new alerts
+      queryClient.invalidateQueries({ queryKey: ['/api/alerts/active'] });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Scan failed",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        duration: 3000,
+      });
+      setScanningState('idle');
+    } finally {
+      setIsScanning(false);
+    }
+  };
+  
   const handleScan = async () => {
     const error = validateAddress(contractAddress);
     if (error) {
@@ -115,43 +160,23 @@ const Dashboard = () => {
     setAddressError('');
     setScanDialogOpen(false);
     setIsScanning(true);
+    setScanningState('scanning');
+    
+    // For demo purposes, we're using the Quill.ai contract scanning
+    // This will call handleQuillScanComplete when the scanning process is complete
     
     toast({
       title: "Scan initiated",
       description: `Analyzing contract at ${contractAddress.substring(0, 6)}...${contractAddress.substring(38)}`,
       duration: 2000,
     });
-    
-    try {
-      // For demo, use one of the existing contracts
-      const targetContract = contracts?.length 
-        ? contracts[Math.floor(Math.random() * contracts.length)]
-        : null;
-      
-      if (targetContract) {
-        await analyzeContract(targetContract.id);
-        
-        toast({
-          title: "Scan completed",
-          description: `Contract at ${contractAddress.substring(0, 6)}...${contractAddress.substring(38)} has been analyzed`,
-          duration: 3000,
-        });
-      } else {
-        throw new Error("No contracts available for analysis");
-      }
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Scan failed",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
-        duration: 3000,
-      });
-    } finally {
-      setIsScanning(false);
-      setContractAddress('');
-      // Refresh data
-      queryClient.invalidateQueries({ queryKey: ['/api/alerts/active'] });
-    }
+  };
+  
+  const resetScanState = () => {
+    setScanningState('idle');
+    setContractAddress('');
+    setContractSource(null);
+    setScanResults(null);
   };
 
   return (
@@ -284,8 +309,34 @@ const Dashboard = () => {
           </div>
 
           <div className="flex-grow overflow-auto p-4">
+            {/* Quill.ai Contract Scanning States */}
+            {isMainDashboard && scanningState === 'scanning' && (
+              <ContractScanProgress address={contractAddress} onComplete={handleQuillScanComplete} />
+            )}
+            
+            {isMainDashboard && scanningState === 'results' && scanResults && (
+              <div className="mb-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold text-white">Scan Results</h2>
+                  <Button 
+                    variant="outline" 
+                    className="text-sm border-gray-700 text-gray-300 hover:text-white hover:bg-slate-700"
+                    onClick={resetScanState}
+                  >
+                    <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Back to Dashboard
+                  </Button>
+                </div>
+                <Suspense fallback={<div className="bg-slate-800 p-8 rounded-lg border border-gray-700 text-center">Loading scan results...</div>}>
+                  <ContractScanResults result={scanResults} sourceCode={contractSource || undefined} />
+                </Suspense>
+              </div>
+            )}
+            
             {/* Main Dashboard View */}
-            {isMainDashboard && (
+            {isMainDashboard && scanningState === 'idle' && (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                   <StatusCard />
