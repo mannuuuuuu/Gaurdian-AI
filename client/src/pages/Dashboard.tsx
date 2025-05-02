@@ -7,7 +7,7 @@ import StatusCard from "@/components/dashboard/StatusCard";
 import ContractWatchlist from "@/components/dashboard/ContractWatchlist";
 import AIAlertPanel from "@/components/dashboard/AIAlertPanel";
 import EventLog from "@/components/dashboard/EventLog";
-import { getContracts, getActiveAlerts, getAiUsage, analyzeContract } from "@/lib/blockchain";
+import { getContracts, getActiveAlerts, getAiUsage, analyzeContract, getMonitorStatus } from "@/lib/blockchain";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
@@ -43,6 +43,11 @@ const Dashboard = () => {
     queryKey: ['/api/ai/usage'],
     queryFn: getAiUsage
   });
+  
+  const { data: monitorStatus } = useQuery({
+    queryKey: ['/api/monitor/status'],
+    queryFn: getMonitorStatus
+  });
 
   const handleRefresh = () => {
     // Invalidate queries to refresh data
@@ -50,6 +55,7 @@ const Dashboard = () => {
     queryClient.invalidateQueries({ queryKey: ['/api/alerts/active'] });
     queryClient.invalidateQueries({ queryKey: ['/api/events'] });
     queryClient.invalidateQueries({ queryKey: ['/api/ai/usage'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/monitor/status'] });
     
     toast({
       title: "Refreshed",
@@ -248,51 +254,122 @@ const Dashboard = () => {
             
             {/* Reports Page */}
             {isReportsPage && (
-              <div className="bg-slate-800 rounded-lg p-6 border border-gray-700 shadow-md">
-                <h2 className="text-xl font-semibold mb-4 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                  </svg>
-                  Analytics Reports
+              <div className="bg-slate-800 rounded-lg p-6 border border-gray-700 shadow-md hover:shadow-lg transition-all duration-300 hover:border-gray-600">
+                <h2 className="text-xl font-semibold mb-6 flex items-center">
+                  <div className="bg-accent/10 p-2 rounded-full mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                  </div>
+                  <span className="bg-gradient-to-r from-accent to-accent-light bg-clip-text text-transparent">
+                    Analytics Reports
+                  </span>
                 </h2>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <div className="bg-slate-700 rounded-lg p-4">
-                    <h3 className="text-lg font-medium text-white mb-3">AI Usage</h3>
-                    <div className="flex items-center justify-between mb-2">
-                      <span>Queries Used</span>
-                      <span className="font-semibold">{aiUsage?.used || 0}</span>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="bg-slate-700 p-5 rounded-lg border border-slate-600 hover:shadow-md transition-all duration-200 hover:border-slate-500">
+                    <div className="flex items-center mb-4">
+                      <div className="bg-primary/20 w-10 h-10 rounded-full flex items-center justify-center mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-medium text-white">AI Usage Statistics</h3>
                     </div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span>Quota Limit</span>
-                      <span className="font-semibold">{aiUsage?.limit || 100000}</span>
+                    
+                    <div className="w-full bg-slate-700 rounded-full h-3 mt-3 mb-5 overflow-hidden">
+                      <div 
+                        className="bg-gradient-to-r from-primary/70 to-primary h-3 rounded-full transition-all duration-500 ease-out" 
+                        style={{ width: `${aiUsage?.percentage || 0}%` }}
+                      ></div>
                     </div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span>Usage Percentage</span>
-                      <span className="font-semibold">{aiUsage?.percentage.toFixed(2) || 0}%</span>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
+                      <div className="bg-slate-800 p-4 rounded-lg text-center border border-slate-700">
+                        <div className="text-3xl font-bold text-white bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent">
+                          {aiUsage?.used.toLocaleString() || 0}
+                        </div>
+                        <div className="text-xs text-gray-400 mt-1">Queries Used</div>
+                      </div>
+                      
+                      <div className="bg-slate-800 p-4 rounded-lg text-center border border-slate-700">
+                        <div className="text-3xl font-bold text-white bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent">
+                          {aiUsage?.limit.toLocaleString() || 100000}
+                        </div>
+                        <div className="text-xs text-gray-400 mt-1">Total Quota</div>
+                      </div>
+                      
+                      <div className="bg-slate-800 p-4 rounded-lg text-center border border-slate-700">
+                        <div className="text-3xl font-bold text-white bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent">
+                          {aiUsage?.percentage.toFixed(1) || 0}%
+                        </div>
+                        <div className="text-xs text-gray-400 mt-1">Utilization</div>
+                      </div>
                     </div>
                   </div>
                   
-                  <div className="bg-slate-700 rounded-lg p-4">
-                    <h3 className="text-lg font-medium text-white mb-3">Event Summary</h3>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="bg-slate-800 p-3 rounded-lg text-center">
-                        <div className="text-2xl font-bold text-primary">3</div>
-                        <div className="text-xs text-gray-400">Events Today</div>
+                  <div className="bg-slate-700 p-5 rounded-lg border border-slate-600 hover:shadow-md transition-all duration-200 hover:border-slate-500">
+                    <div className="flex items-center mb-4">
+                      <div className="bg-accent/20 w-10 h-10 rounded-full flex items-center justify-center mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                        </svg>
                       </div>
-                      <div className="bg-slate-800 p-3 rounded-lg text-center">
-                        <div className="text-2xl font-bold text-primary">12</div>
-                        <div className="text-xs text-gray-400">This Week</div>
+                      <h3 className="text-lg font-medium text-white">Event Metrics</h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="bg-slate-800 p-4 rounded-lg text-center border border-slate-700 hover:border-accent-dark/30 transition-all duration-200">
+                        <div className="text-3xl font-bold text-white bg-gradient-to-r from-accent to-accent-light bg-clip-text text-transparent">3</div>
+                        <div className="text-xs text-gray-400 mt-1">Events Today</div>
                       </div>
-                      <div className="bg-slate-800 p-3 rounded-lg text-center">
-                        <div className="text-2xl font-bold text-primary">47</div>
-                        <div className="text-xs text-gray-400">This Month</div>
+                      
+                      <div className="bg-slate-800 p-4 rounded-lg text-center border border-slate-700 hover:border-accent-dark/30 transition-all duration-200">
+                        <div className="text-3xl font-bold text-white bg-gradient-to-r from-accent to-accent-light bg-clip-text text-transparent">12</div>
+                        <div className="text-xs text-gray-400 mt-1">This Week</div>
+                      </div>
+                      
+                      <div className="bg-slate-800 p-4 rounded-lg text-center border border-slate-700 hover:border-accent-dark/30 transition-all duration-200">
+                        <div className="text-3xl font-bold text-white bg-gradient-to-r from-accent to-accent-light bg-clip-text text-transparent">47</div>
+                        <div className="text-xs text-gray-400 mt-1">This Month</div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-5">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-gray-400">Contract Events</span>
+                        <span className="text-sm text-white">60%</span>
+                      </div>
+                      <div className="w-full bg-slate-800 rounded-full h-2.5 mb-4">
+                        <div className="bg-accent h-2.5 rounded-full" style={{ width: '60%' }}></div>
+                      </div>
+                      
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-gray-400">Security Alerts</span>
+                        <span className="text-sm text-white">25%</span>
+                      </div>
+                      <div className="w-full bg-slate-800 rounded-full h-2.5 mb-4">
+                        <div className="bg-alert h-2.5 rounded-full" style={{ width: '25%' }}></div>
+                      </div>
+                      
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-gray-400">System Operations</span>
+                        <span className="text-sm text-white">15%</span>
+                      </div>
+                      <div className="w-full bg-slate-800 rounded-full h-2.5">
+                        <div className="bg-secondary h-2.5 rounded-full" style={{ width: '15%' }}></div>
                       </div>
                     </div>
                   </div>
                 </div>
                 
                 <div className="mt-6">
-                  <h3 className="text-lg font-medium text-white mb-3">Recent Activity</h3>
+                  <h3 className="text-lg font-medium text-white mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Recent Blockchain Activity
+                  </h3>
                   <EventLog compact={true} />
                 </div>
               </div>
@@ -300,15 +377,19 @@ const Dashboard = () => {
             
             {/* Contract Details Page */}
             {isContractPage && (
-              <div className="bg-slate-800 rounded-lg p-6 border border-gray-700 shadow-md">
-                <h2 className="text-xl font-semibold mb-4 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  Contract Details: {contractId}
+              <div className="bg-slate-800 rounded-lg p-6 border border-gray-700 shadow-md hover:shadow-lg transition-all duration-300 hover:border-gray-600">
+                <h2 className="text-xl font-semibold mb-6 flex items-center">
+                  <div className="bg-secondary/10 p-2 rounded-full mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <span className="bg-gradient-to-r from-secondary to-secondary-light bg-clip-text text-transparent">
+                    Contract Details: {contractId && contractId.charAt(0).toUpperCase() + contractId.slice(1)}
+                  </span>
                 </h2>
                 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                   {contracts?.filter((c: any) => {
                     // Match contract type with URL parameter 
                     return c.type && contractId && 
@@ -317,20 +398,55 @@ const Dashboard = () => {
                                                 contractId === 'dao' ? 'dao' : 
                                                 contractId === 'badge' ? 'badge' : ''));
                   }).map((contract: any) => (
-                    <div key={contract.id} className="bg-slate-700 p-4 rounded-lg">
-                      <h3 className="text-lg font-medium text-white">{contract.name}</h3>
-                      <div className="mt-2 text-sm text-gray-300">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-gray-400">Address:</span>
-                          <span className="font-mono">{contract.address.substring(0, 10)}...{contract.address.substring(34)}</span>
+                    <div 
+                      key={contract.id} 
+                      className="bg-slate-700 p-5 rounded-lg border border-slate-600 hover:shadow-md transition-all duration-200 hover:border-slate-500"
+                    >
+                      <div className="flex items-center mb-4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${
+                          contract.status === 'HEALTHY' ? 'bg-secondary/20' : 
+                          contract.status === 'WARNING' ? 'bg-amber-900/20' : 
+                          'bg-alert/20'
+                        }`}>
+                          <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${
+                            contract.status === 'HEALTHY' ? 'text-secondary-light' : 
+                            contract.status === 'WARNING' ? 'text-amber-300' : 
+                            'text-alert-light'
+                          }`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
                         </div>
-                        <div className="flex items-center justify-between mb-1">
+                        <h3 className="text-lg font-medium text-white">{contract.name}</h3>
+                      </div>
+                      
+                      <div className="space-y-3 mt-2 text-sm text-gray-300">
+                        <div className="flex flex-col">
+                          <span className="text-gray-400 text-xs mb-1">Contract Address</span>
+                          <span className="font-mono bg-slate-800 px-3 py-1.5 rounded-md text-secondary-light text-xs overflow-x-auto whitespace-nowrap">
+                            {contract.address}
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
                           <span className="text-gray-400">Status:</span>
-                          <span className={contract.status === 'HEALTHY' ? 'text-green-400' : 'text-red-400'}>{contract.status}</span>
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            contract.status === 'HEALTHY' ? 'bg-secondary/20 text-secondary-light' : 
+                            contract.status === 'WARNING' ? 'bg-amber-900/20 text-amber-300' : 
+                            'bg-alert/20 text-alert-light'
+                          }`}>
+                            {contract.status}
+                          </span>
                         </div>
-                        <div className="flex items-center justify-between mb-1">
+                        
+                        <div className="flex items-center justify-between">
                           <span className="text-gray-400">Added:</span>
-                          <span>{new Date(contract.addedAt).toLocaleDateString()}</span>
+                          <span className="text-white">
+                            {new Date(contract.addedAt).toLocaleDateString(undefined, {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -338,7 +454,12 @@ const Dashboard = () => {
                 </div>
                 
                 <div className="mt-6">
-                  <h3 className="text-lg font-medium text-white mb-3">Contract Events</h3>
+                  <h3 className="text-lg font-medium text-white mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    Contract Event History
+                  </h3>
                   <EventLog contractFilter={contractId || ""} />
                 </div>
               </div>
@@ -346,63 +467,143 @@ const Dashboard = () => {
             
             {/* Settings Page */}
             {isSettingsPage && (
-              <div className="bg-slate-800 rounded-lg p-6 border border-gray-700 shadow-md">
-                <h2 className="text-xl font-semibold mb-4 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  Settings
+              <div className="bg-slate-800 rounded-lg p-6 border border-gray-700 shadow-md hover:shadow-lg transition-all duration-300 hover:border-gray-600">
+                <h2 className="text-xl font-semibold mb-6 flex items-center">
+                  <div className="bg-primary/10 p-2 rounded-full mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <span className="bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent">
+                    Guardian Settings
+                  </span>
                 </h2>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="bg-slate-700 p-4 rounded-lg">
-                    <h3 className="text-lg font-medium text-white mb-3">Monitor Settings</h3>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <span>Monitor Service Status</span>
-                        <Button variant="outline" size="sm">
-                          {alerts?.length ? "Running" : "Stopped"}
+                  <div className="bg-slate-700 p-5 rounded-lg border border-slate-600 hover:shadow-md transition-all duration-200 hover:border-slate-500">
+                    <div className="flex items-center mb-4">
+                      <div className="bg-secondary/20 w-10 h-10 rounded-full flex items-center justify-center mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-medium text-white">Monitor Settings</h3>
+                    </div>
+                    
+                    <div className="space-y-5 mt-2">
+                      <div className="flex items-center justify-between bg-slate-800 p-3 rounded-md">
+                        <div className="flex flex-col">
+                          <span className="text-white font-medium">Monitor Service Status</span>
+                          <span className="text-xs text-gray-400">Enable/disable blockchain monitoring</span>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className={`${monitorStatus?.active ? 'border-secondary text-secondary hover:bg-secondary/20' : 'border-alert text-alert hover:bg-alert/20'}`}
+                        >
+                          {monitorStatus?.active ? "Active" : "Inactive"}
                         </Button>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span>AI Analysis Frequency</span>
-                        <Button variant="outline" size="sm">
+                      
+                      <div className="flex items-center justify-between bg-slate-800 p-3 rounded-md">
+                        <div className="flex flex-col">
+                          <span className="text-white font-medium">AI Analysis Frequency</span>
+                          <span className="text-xs text-gray-400">How often contracts are analyzed</span>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="border-primary text-primary hover:bg-primary/20"
+                        >
                           Every 4 hours
                         </Button>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span>Alert Severity Threshold</span>
-                        <Button variant="outline" size="sm">
+                      
+                      <div className="flex items-center justify-between bg-slate-800 p-3 rounded-md">
+                        <div className="flex flex-col">
+                          <span className="text-white font-medium">Alert Severity Threshold</span>
+                          <span className="text-xs text-gray-400">Minimum level for notifications</span>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="border-accent text-accent hover:bg-accent/20"
+                        >
                           Medium
                         </Button>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="bg-slate-700 p-4 rounded-lg">
-                    <h3 className="text-lg font-medium text-white mb-3">AI Settings</h3>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <span>AI Model</span>
-                        <Button variant="outline" size="sm">
+                  <div className="bg-slate-700 p-5 rounded-lg border border-slate-600 hover:shadow-md transition-all duration-200 hover:border-slate-500">
+                    <div className="flex items-center mb-4">
+                      <div className="bg-primary/20 w-10 h-10 rounded-full flex items-center justify-center mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-medium text-white">AI Settings</h3>
+                    </div>
+                    
+                    <div className="space-y-5 mt-2">
+                      <div className="flex items-center justify-between bg-slate-800 p-3 rounded-md">
+                        <div className="flex flex-col">
+                          <span className="text-white font-medium">AI Model</span>
+                          <span className="text-xs text-gray-400">AI model used for analysis</span>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="border-primary text-primary hover:bg-primary/20"
+                        >
                           LLama3-8b-8192
                         </Button>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span>Analysis Depth</span>
-                        <Button variant="outline" size="sm">
+                      
+                      <div className="flex items-center justify-between bg-slate-800 p-3 rounded-md">
+                        <div className="flex flex-col">
+                          <span className="text-white font-medium">Analysis Depth</span>
+                          <span className="text-xs text-gray-400">Contract inspection detail level</span>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="border-primary text-primary hover:bg-primary/20"
+                        >
                           Comprehensive
                         </Button>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span>API Key Status</span>
-                        <Button variant="outline" size="sm" className="text-red-400">
+                      
+                      <div className="flex items-center justify-between bg-slate-800 p-3 rounded-md">
+                        <div className="flex flex-col">
+                          <span className="text-white font-medium">API Key Status</span>
+                          <span className="text-xs text-gray-400">Groq API key configuration</span>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="border-alert text-alert hover:bg-alert/20"
+                        >
                           Not Set
                         </Button>
                       </div>
                     </div>
                   </div>
+                </div>
+                
+                <div className="mt-6 flex justify-end">
+                  <Button 
+                    variant="outline"
+                    className="mr-2 border-gray-600 text-gray-400 hover:bg-gray-700 hover:text-white"
+                  >
+                    Reset to Defaults
+                  </Button>
+                  <Button 
+                    className="bg-primary hover:bg-primary-dark text-white"
+                  >
+                    Save Settings
+                  </Button>
                 </div>
               </div>
             )}
