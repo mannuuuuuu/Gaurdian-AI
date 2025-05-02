@@ -88,3 +88,16 @@
 .terminal-line.command {
   @apply text-green-400 font-bold;
 }
+
+/* Sidebar styles */
+.sidebar-item {
+  @apply flex items-center p-2 rounded-md transition-colors;
+}
+
+.sidebar-item.active {
+  @apply bg-primary-dark/20 text-primary-light;
+}
+
+.sidebar-item.inactive {
+  @apply text-gray-400 hover:bg-gray-700 hover:text-white;
+}

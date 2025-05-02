@@ -38,13 +38,13 @@ const ContractWatchlist = () => {
   const getStatusBadge = (status: string) => {
     switch (status.toUpperCase()) {
       case 'HEALTHY':
-        return <span className="px-2 py-1 text-xs rounded-full bg-secondary/20 text-secondary-light">Healthy</span>;
+        return <span className="px-2 py-1 text-xs rounded-full bg-secondary-dark/20 text-secondary-light">Healthy</span>;
       case 'WARNING':
-        return <span className="px-2 py-1 text-xs rounded-full bg-yellow-900/30 text-accent-light">Warning</span>;
+        return <span className="px-2 py-1 text-xs rounded-full bg-amber-900/20 text-accent-light">Warning</span>;
       case 'ALERT':
-        return <span className="px-2 py-1 text-xs rounded-full bg-red-900/30 text-alert-light">Alert</span>;
+        return <span className="px-2 py-1 text-xs rounded-full bg-alert/20 text-alert-light">Alert</span>;
       default:
-        return <span className="px-2 py-1 text-xs rounded-full bg-gray-800 text-gray-400">Unknown</span>;
+        return <span className="px-2 py-1 text-xs rounded-full bg-gray-800/50 text-gray-400">Unknown</span>;
     }
   };
 

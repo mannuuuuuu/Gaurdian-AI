@@ -12,8 +12,8 @@ const Header = () => {
     <header className="bg-slate-800 border-b border-gray-700 px-4 py-3 flex justify-between items-center">
       <div className="flex items-center space-x-3">
         <div className="text-primary text-2xl font-bold">👾 Guardian AI</div>
-        <div className="hidden md:flex items-center px-2 py-1 rounded bg-slate-900 text-xs text-green-300">
-          <span className="inline-block w-2 h-2 rounded-full bg-secondary mr-2"></span>
+        <div className="hidden md:flex items-center px-2 py-1 rounded bg-slate-900 text-xs text-secondary-light">
+          <span className="inline-block w-2 h-2 rounded-full bg-secondary-light mr-2 animate-pulse"></span>
           Connected to Soneium
         </div>
       </div>
