@@ -91,13 +91,20 @@
 
 /* Sidebar styles */
 .sidebar-item {
-  @apply flex items-center p-2 rounded-md transition-colors;
+  @apply flex items-center p-2 rounded-md transition-all duration-200;
 }
 
 .sidebar-item.active {
-  @apply bg-primary-dark/20 text-primary-light;
+  @apply bg-primary-dark/20 text-primary-light font-medium;
+  transform: translateX(4px);
 }
 
 .sidebar-item.inactive {
   @apply text-gray-400 hover:bg-gray-700 hover:text-white;
+}
+
+.sidebar-item:hover svg {
+  @apply text-primary-light;
+  transform: scale(1.1);
+  transition: transform 0.2s ease-in-out;
 }
