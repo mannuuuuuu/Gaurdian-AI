@@ -72,9 +72,11 @@ const AIAlertPanel = ({ fullSize = false }: AIAlertPanelProps) => {
                   </div>
                   <div className="mt-3 flex justify-between items-center">
                     <span className="text-xs text-gray-400">
-                      {new Date(alert.createdAt).toLocaleString(undefined, {
+                      {/* Format date to readable format */}
+                      {new Date(alert.createdAt).toLocaleDateString(undefined, {
                         month: 'short',
-                        day: 'numeric',
+                        day: 'numeric'
+                      })} {new Date(alert.createdAt).toLocaleTimeString(undefined, {
                         hour: '2-digit',
                         minute: '2-digit'
                       })}
