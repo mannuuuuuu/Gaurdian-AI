@@ -10,6 +10,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create HTTP server
   const httpServer = createServer(app);
   
+  // Initialize blockchain service with demo mode
+  const blockchainInitialized = await blockchainService.initialize();
+  console.log(`Blockchain service initialization: ${blockchainInitialized ? 'success' : 'failed'}`);
+  
   // Start monitoring service on server startup
   monitorService.start().catch(err => {
     console.error('Failed to start monitoring service:', err);
