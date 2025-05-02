@@ -211,7 +211,8 @@ class BlockchainService {
         name: string;
       }
       
-      const eventFragment = fragment as EventFragment;
+      // Use unknown as intermediate type for safe casting
+      const eventFragment = fragment as unknown as EventFragment;
       const eventName = eventFragment.name;
       
       ethersContract.on(eventName, async (...args) => {
