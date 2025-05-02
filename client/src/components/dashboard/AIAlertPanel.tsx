@@ -53,12 +53,7 @@ const AIAlertPanel = ({ fullSize = false }: AIAlertPanelProps) => {
                   <div className="mt-3 flex justify-end">
                     <Button 
                       variant="ghost"
-                      className={`text-xs text-white px-2 py-1 rounded
-                        ${alert.severity === 'HIGH' 
-                          ? 'bg-alert hover:bg-alert-dark' 
-                          : alert.severity === 'MEDIUM' 
-                            ? 'bg-amber-500 hover:bg-amber-600' 
-                            : 'bg-blue-500 hover:bg-blue-600'}`}
+                      className={`text-xs text-white px-2 py-1 rounded ${severity.buttonBg}`}
                     >
                       {alert.severity === 'HIGH' ? 'Review Now' : 'Investigate'}
                     </Button>
@@ -69,13 +64,13 @@ const AIAlertPanel = ({ fullSize = false }: AIAlertPanelProps) => {
             
             {/* Add recommendation item if less than 3 alerts */}
             {alerts.length < 3 && (
-              <div className="bg-blue-900/20 border border-blue-800/30 rounded-md p-3">
+              <div className="bg-primary-dark/20 border border-primary-dark/30 rounded-md p-3">
                 <div className="flex items-start">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-400 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary-light mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <div>
-                    <h3 className="text-blue-300 font-medium text-sm">AI Recommendation</h3>
+                    <h3 className="text-primary-light font-medium text-sm">AI Recommendation</h3>
                     <p className="text-gray-300 text-xs mt-1">
                       Consider implementing a time-delay mechanism for sensitive Guardian DAO operations to allow for proper review before execution.
                     </p>

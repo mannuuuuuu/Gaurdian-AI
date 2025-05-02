@@ -26,15 +26,18 @@ const EventLog = ({ compact = false, contractFilter }: EventLogProps) => {
   }, [events, autoScroll]);
 
   const getLogTypeClass = (event: any) => {
-    if (event.eventName === 'AlertSubmitted' || event.eventName === 'BadgeRevoked') {
+    if (event.eventName === 'AlertSubmitted' || event.eventName === 'BadgeRevoked' || 
+        event.eventName.includes('Error') || event.eventName.includes('Revoked')) {
       return 'error';
     }
     
-    if (event.eventName === 'Vote' || event.eventName === 'ProposalCreated') {
+    if (event.eventName === 'Vote' || event.eventName === 'ProposalCreated' || 
+        event.eventName.includes('Warning') || event.eventName.includes('Alert')) {
       return 'warning';
     }
     
-    if (event.eventName === 'ProposalExecuted' || event.eventName.includes('Success')) {
+    if (event.eventName === 'ProposalExecuted' || event.eventName.includes('Success') ||
+        event.eventName.includes('Confirmed') || event.eventName.includes('BadgeClaim')) {
       return 'info';
     }
     
@@ -74,7 +77,7 @@ const EventLog = ({ compact = false, contractFilter }: EventLogProps) => {
       </div>
       <div 
         ref={terminalRef}
-        className={`terminal ${compact ? 'h-48' : 'h-64'} p-1 text-sm overflow-auto`}
+        className={`terminal ${compact ? 'h-48' : 'h-64'} p-2 text-xs rounded-b-lg overflow-auto font-mono border-t border-gray-700`}
         onScroll={(e) => {
           const target = e.target as HTMLDivElement;
           const isScrolledToBottom = 

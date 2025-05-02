@@ -36,31 +36,35 @@ export function formatSeverity(severity: string) {
       return {
         label: severity === 'HIGH' ? 'High' : 'Critical',
         color: 'text-alert-light',
-        bgColor: 'bg-red-900/30',
-        borderColor: 'border-red-800/30'
+        bgColor: 'bg-alert/20',
+        borderColor: 'border-alert/30',
+        buttonBg: 'bg-alert hover:bg-alert-dark'
       };
     case 'MEDIUM':
     case 'WARNING':
       return {
         label: 'Medium',
         color: 'text-accent-light',
-        bgColor: 'bg-yellow-900/30',
-        borderColor: 'border-yellow-800/30'
+        bgColor: 'bg-amber-900/20', 
+        borderColor: 'border-amber-700/30',
+        buttonBg: 'bg-amber-600 hover:bg-amber-700'
       };
     case 'LOW':
     case 'INFO':
       return {
         label: 'Low',
-        color: 'text-blue-300',
-        bgColor: 'bg-blue-900/30',
-        borderColor: 'border-blue-800/30'
+        color: 'text-primary-light',
+        bgColor: 'bg-primary-dark/20',
+        borderColor: 'border-primary-dark/30',
+        buttonBg: 'bg-primary hover:bg-primary-dark'
       };
     default:
       return {
         label: 'Unknown',
         color: 'text-gray-300',
-        bgColor: 'bg-gray-800',
-        borderColor: 'border-gray-700'
+        bgColor: 'bg-gray-800/50',
+        borderColor: 'border-gray-700',
+        buttonBg: 'bg-gray-600 hover:bg-gray-700'
       };
   }
 }
