@@ -13,10 +13,27 @@ const EventLog = ({ compact = false, contractFilter }: EventLogProps) => {
   const terminalRef = useRef<HTMLDivElement>(null);
   const [autoScroll, setAutoScroll] = useState(true);
   
+  // Handle contract filtering based on string IDs or numeric IDs
+  const getContractId = (filter: string | undefined): number | null => {
+    if (!filter) return null;
+    
+    // Handle string-based contract types (feed, dao, badge)
+    if (filter === 'feed') return 1;
+    if (filter === 'dao') return 2;
+    if (filter === 'badge') return 3;
+    
+    // Try to parse as a number
+    const parsedId = parseInt(filter, 10);
+    return !isNaN(parsedId) ? parsedId : null;
+  };
+  
+  const contractId = getContractId(contractFilter);
+  
   const { data: events, isLoading } = useQuery({
-    queryKey: contractFilter ? ['/api/events/contract', contractFilter] : ['/api/events'],
-    queryFn: () => contractFilter ? getContractEvents(parseInt(contractFilter, 10), 20) : getEvents(20),
-    refetchInterval: 5000 // Refetch every 5 seconds
+    queryKey: contractId ? ['/api/events/contract', contractId.toString()] : ['/api/events'],
+    queryFn: () => contractId ? getContractEvents(contractId, 20) : getEvents(20),
+    refetchInterval: 5000, // Refetch every 5 seconds
+    retry: false // Don't retry on error
   });
 
   useEffect(() => {

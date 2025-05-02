@@ -100,9 +100,9 @@ const Dashboard = () => {
         <Sidebar />
         
         <main className="flex-grow flex flex-col h-full overflow-hidden">
-          <div className="px-4 py-4 border-b border-gray-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+          <div className="px-4 py-4 md:px-6 border-b border-gray-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
             <div>
-              <h1 className="text-xl font-semibold text-white">
+              <h1 className="text-2xl font-semibold text-white bg-gradient-to-r from-primary-light to-white bg-clip-text text-transparent">
                 {isMainDashboard && "Monitoring Dashboard"}
                 {isAlertsPage && "Security Alerts"}
                 {isReportsPage && "Analytics Reports"}
@@ -329,7 +329,7 @@ const Dashboard = () => {
                 
                 <div className="mt-6">
                   <h3 className="text-lg font-medium text-white mb-3">Contract Events</h3>
-                  <EventLog contractFilter={contractId} />
+                  <EventLog contractFilter={contractId || ""} />
                 </div>
               </div>
             )}
