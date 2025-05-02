@@ -153,63 +153,73 @@ const Dashboard = () => {
             {/* Main Dashboard View */}
             {isMainDashboard && (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                   <StatusCard />
                   
-                  <div className="bg-slate-800 rounded-lg p-4 border border-gray-700 shadow-md">
+                  <div className="bg-slate-800 rounded-lg p-4 border border-gray-700 shadow-md hover:shadow-lg transition-all duration-300 hover:border-gray-600">
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="text-gray-400 text-sm font-medium">Monitored Contracts</h3>
-                        <p className="text-xl font-semibold text-white mt-1">{contracts?.length || 0}</p>
+                        <p className="text-xl font-bold text-white mt-1 bg-gradient-to-r from-secondary-light to-secondary bg-clip-text text-transparent">{contracts?.length || 0}</p>
                       </div>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-primary/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
+                      <div className="bg-secondary/10 p-2 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
                     </div>
                     <div className="flex items-center mt-4 text-sm">
-                      <span className="text-secondary">+1</span>
+                      <span className="text-secondary-light font-medium">+1</span>
                       <span className="text-gray-400 ml-1">from last week</span>
                     </div>
                   </div>
                   
-                  <div className="bg-slate-800 rounded-lg p-4 border border-gray-700 shadow-md">
+                  <div className="bg-slate-800 rounded-lg p-4 border border-gray-700 shadow-md hover:shadow-lg transition-all duration-300 hover:border-gray-600">
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="text-gray-400 text-sm font-medium">Active Alerts</h3>
-                        <p className="text-xl font-semibold text-white mt-1">{alerts?.length || 0}</p>
+                        <p className="text-xl font-bold text-white mt-1 bg-gradient-to-r from-alert-light to-alert bg-clip-text text-transparent">{alerts?.length || 0}</p>
                       </div>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-alert/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
+                      <div className="bg-alert/10 p-2 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-alert" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                      </div>
                     </div>
                     <div className="mt-4 grid grid-cols-3 gap-1 text-xs">
-                      <div className="bg-red-900/30 text-alert-light rounded px-2 py-1 text-center">
+                      <div className="bg-red-900/20 text-alert-light rounded-md px-2 py-1.5 text-center font-medium border border-red-900/30">
                         {alerts?.filter((a: Alert) => a.severity === 'HIGH').length || 0} High
                       </div>
-                      <div className="bg-yellow-900/30 text-accent-light rounded px-2 py-1 text-center">
-                        {alerts?.filter((a: Alert) => a.severity === 'MEDIUM').length || 0} Medium
+                      <div className="bg-amber-900/20 text-accent-light rounded-md px-2 py-1.5 text-center font-medium border border-amber-900/30">
+                        {alerts?.filter((a: Alert) => a.severity === 'MEDIUM').length || 0} Med
                       </div>
-                      <div className="bg-blue-900/30 text-blue-300 rounded px-2 py-1 text-center">
+                      <div className="bg-blue-900/20 text-blue-300 rounded-md px-2 py-1.5 text-center font-medium border border-blue-900/30">
                         {alerts?.filter((a: Alert) => a.severity === 'LOW').length || 0} Low
                       </div>
                     </div>
                   </div>
                   
-                  <div className="bg-slate-800 rounded-lg p-4 border border-gray-700 shadow-md">
+                  <div className="bg-slate-800 rounded-lg p-4 border border-gray-700 shadow-md hover:shadow-lg transition-all duration-300 hover:border-gray-600">
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="text-gray-400 text-sm font-medium">AI Analysis</h3>
-                        <p className="text-xl font-semibold text-white mt-1">{aiUsage?.used || 0} Queries</p>
+                        <p className="text-xl font-bold text-white mt-1 bg-gradient-to-r from-primary-light to-primary bg-clip-text text-transparent">{aiUsage?.used || 0} Queries</p>
                       </div>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-primary/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
+                      <div className="bg-primary/10 p-2 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      </div>
                     </div>
-                    <div className="w-full bg-gray-700 rounded-full h-2.5 mt-4">
-                      <div className="bg-primary h-2.5 rounded-full" style={{ width: `${aiUsage?.percentage || 0}%` }}></div>
+                    <div className="w-full bg-slate-700 rounded-full h-2.5 mt-4 overflow-hidden">
+                      <div 
+                        className="bg-gradient-to-r from-primary/70 to-primary h-2.5 rounded-full transition-all duration-500 ease-out" 
+                        style={{ width: `${aiUsage?.percentage || 0}%` }}
+                      ></div>
                     </div>
-                    <div className="mt-1 text-xs text-gray-400">
-                      {aiUsage?.percentage.toFixed(1) || 0}% of daily quota
+                    <div className="mt-1 text-xs text-gray-400 flex justify-between">
+                      <span>{aiUsage?.used.toLocaleString() || 0} used</span>
+                      <span>{aiUsage?.percentage.toFixed(1) || 0}% of quota</span>
                     </div>
                   </div>
                 </div>

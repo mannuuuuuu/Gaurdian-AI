@@ -82,19 +82,24 @@ const EventLog = ({ compact = false, contractFilter }: EventLogProps) => {
   };
 
   return (
-    <div className="bg-slate-800 rounded-lg border border-gray-700 shadow-md mb-6">
-      <div className="border-b border-gray-700 px-4 py-3 flex justify-between items-center">
-        <h2 className="font-medium">
-          {contractFilter ? 'Contract Event Log' : 'Live Event Monitor'}
+    <div className="bg-slate-800 rounded-lg border border-gray-700 shadow-md mb-6 hover:shadow-lg transition-all duration-300 hover:border-gray-600">
+      <div className="border-b border-gray-700 px-4 py-3 flex justify-between items-center bg-slate-800/50">
+        <h2 className="font-medium flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+          </svg>
+          {contractFilter ? 'Contract Event Log' : 'Blockchain Monitor'}
         </h2>
-        <div className="flex items-center text-xs text-gray-400">
-          <span className="inline-block w-2 h-2 rounded-full bg-secondary animate-pulse mr-2"></span>
-          {contractFilter ? 'Filtered View' : 'Live Monitoring'}
+        <div className="flex items-center text-xs px-2 py-1 rounded-full bg-slate-700">
+          <span className="inline-block w-2 h-2 rounded-full bg-accent animate-pulse mr-2"></span>
+          <span className="text-accent-light">
+            {contractFilter ? 'Filtered View' : 'Live Monitoring'}
+          </span>
         </div>
       </div>
       <div 
         ref={terminalRef}
-        className={`terminal ${compact ? 'h-48' : 'h-64'} p-2 text-xs rounded-b-lg overflow-auto font-mono border-t border-gray-700`}
+        className={`terminal ${compact ? 'h-48' : 'h-64'} p-3 text-xs rounded-b-lg overflow-auto font-mono border-t border-gray-700 bg-slate-900/40`}
         onScroll={(e) => {
           const target = e.target as HTMLDivElement;
           const isScrolledToBottom = 
@@ -103,14 +108,20 @@ const EventLog = ({ compact = false, contractFilter }: EventLogProps) => {
         }}
       >
         {isLoading ? (
-          <div className="terminal-line">Loading events...</div>
+          <div className="terminal-line flex items-center">
+            <div className="animate-spin rounded-full h-3 w-3 border border-accent border-t-transparent mr-2"></div>
+            Loading events...
+          </div>
         ) : events && events.length > 0 ? (
           <>
             <div className="terminal-line info">[{new Date().toISOString().replace('T', ' ').slice(0, 19)}] ✓ Connected to Soneium RPC at https://rpc.scs.soneium.io</div>
             <div className="terminal-line command">{'>'} Guardian AI monitoring service initialized with Groq LLama3-8b-8192</div>
             
             {events.map((event: any) => (
-              <div key={event.id} className={`terminal-line ${getLogTypeClass(event)}`}>
+              <div 
+                key={event.id} 
+                className={`terminal-line ${getLogTypeClass(event)} hover:bg-slate-800/50 rounded px-1 -mx-1 transition-colors duration-200`}
+              >
                 {formatLogEntry(event)}
               </div>
             ))}
@@ -119,7 +130,10 @@ const EventLog = ({ compact = false, contractFilter }: EventLogProps) => {
           <>
             <div className="terminal-line info">[{new Date().toISOString().replace('T', ' ').slice(0, 19)}] ✓ Connected to Soneium RPC at https://rpc.scs.soneium.io</div>
             <div className="terminal-line command">{'>'} Guardian AI monitoring service initialized with Groq LLama3-8b-8192</div>
-            <div className="terminal-line">Waiting for blockchain events...</div>
+            <div className="terminal-line flex items-center">
+              <span className="inline-block w-2 h-2 rounded-full bg-secondary animate-pulse mr-2"></span>
+              Waiting for blockchain events...
+            </div>
           </>
         )}
       </div>
