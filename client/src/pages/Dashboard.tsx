@@ -299,7 +299,14 @@ const Dashboard = () => {
                 </h2>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-                  {contracts?.filter((c: any) => c.type?.toLowerCase() === contractId?.toLowerCase()).map((contract: any) => (
+                  {contracts?.filter((c: any) => {
+                    // Match contract type with URL parameter 
+                    return c.type && contractId && 
+                      (c.type.toLowerCase() === contractId.toLowerCase() ||
+                       c.type.toLowerCase() === (contractId === 'feed' ? 'feed' : 
+                                                contractId === 'dao' ? 'dao' : 
+                                                contractId === 'badge' ? 'badge' : ''));
+                  }).map((contract: any) => (
                     <div key={contract.id} className="bg-slate-700 p-4 rounded-lg">
                       <h3 className="text-lg font-medium text-white">{contract.name}</h3>
                       <div className="mt-2 text-sm text-gray-300">

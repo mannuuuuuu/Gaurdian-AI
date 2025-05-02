@@ -24,10 +24,14 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          light: "hsl(207, 90%, 64%)",
+          dark: "hsl(207, 90%, 44%)",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
+          light: "hsl(160, 70%, 50%)",
+          dark: "hsl(160, 70%, 30%)",
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",
@@ -36,6 +40,8 @@ export default {
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
+          light: "hsl(45, 100%, 60%)",
+          dark: "hsl(45, 100%, 45%)",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",

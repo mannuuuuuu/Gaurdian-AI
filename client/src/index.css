@@ -60,6 +60,31 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased bg-slate-900 text-foreground;
   }
+}
+
+/* Terminal styles for EventLog */
+.terminal {
+  @apply bg-slate-900 font-mono text-xs leading-5;
+}
+
+.terminal-line {
+  @apply py-1 px-1 border-b border-gray-800 text-gray-300 whitespace-pre-wrap break-all;
+}
+
+.terminal-line.info {
+  @apply text-blue-400;
+}
+
+.terminal-line.warning {
+  @apply text-amber-400;
+}
+
+.terminal-line.error {
+  @apply text-alert;
+}
+
+.terminal-line.command {
+  @apply text-green-400 font-bold;
 }
