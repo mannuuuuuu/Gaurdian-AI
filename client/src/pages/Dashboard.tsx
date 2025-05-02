@@ -184,13 +184,13 @@ const Dashboard = () => {
                     </div>
                     <div className="mt-4 grid grid-cols-3 gap-1 text-xs">
                       <div className="bg-red-900/30 text-alert-light rounded px-2 py-1 text-center">
-                        {alerts?.filter(a => a.severity === 'HIGH').length || 0} High
+                        {alerts?.filter((a: Alert) => a.severity === 'HIGH').length || 0} High
                       </div>
                       <div className="bg-yellow-900/30 text-accent-light rounded px-2 py-1 text-center">
-                        {alerts?.filter(a => a.severity === 'MEDIUM').length || 0} Medium
+                        {alerts?.filter((a: Alert) => a.severity === 'MEDIUM').length || 0} Medium
                       </div>
                       <div className="bg-blue-900/30 text-blue-300 rounded px-2 py-1 text-center">
-                        {alerts?.filter(a => a.severity === 'LOW').length || 0} Low
+                        {alerts?.filter((a: Alert) => a.severity === 'LOW').length || 0} Low
                       </div>
                     </div>
                   </div>
@@ -299,7 +299,7 @@ const Dashboard = () => {
                 </h2>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-                  {contracts?.filter(c => c.type.toLowerCase() === contractId?.toLowerCase()).map((contract) => (
+                  {contracts?.filter((c: any) => c.type?.toLowerCase() === contractId?.toLowerCase()).map((contract: any) => (
                     <div key={contract.id} className="bg-slate-700 p-4 rounded-lg">
                       <h3 className="text-lg font-medium text-white">{contract.name}</h3>
                       <div className="mt-2 text-sm text-gray-300">

@@ -1,15 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
-import { getEvents } from "@/lib/blockchain";
+import { getEvents, getContractEvents } from "@/lib/blockchain";
 import { useEffect, useRef, useState } from "react";
 import { formatDate } from "@/lib/groq";
+import { Event } from "@shared/schema";
 
-const EventLog = () => {
+interface EventLogProps {
+  compact?: boolean;
+  contractFilter?: string;
+}
+
+const EventLog = ({ compact = false, contractFilter }: EventLogProps) => {
   const terminalRef = useRef<HTMLDivElement>(null);
   const [autoScroll, setAutoScroll] = useState(true);
   
   const { data: events, isLoading } = useQuery({
-    queryKey: ['/api/events'],
-    queryFn: () => getEvents(20),
+    queryKey: contractFilter ? ['/api/events/contract', contractFilter] : ['/api/events'],
+    queryFn: () => contractFilter ? getContractEvents(parseInt(contractFilter, 10), 20) : getEvents(20),
     refetchInterval: 5000 // Refetch every 5 seconds
   });
 
@@ -58,15 +64,17 @@ const EventLog = () => {
   return (
     <div className="bg-slate-800 rounded-lg border border-gray-700 shadow-md mb-6">
       <div className="border-b border-gray-700 px-4 py-3 flex justify-between items-center">
-        <h2 className="font-medium">Live Event Monitor</h2>
+        <h2 className="font-medium">
+          {contractFilter ? 'Contract Event Log' : 'Live Event Monitor'}
+        </h2>
         <div className="flex items-center text-xs text-gray-400">
           <span className="inline-block w-2 h-2 rounded-full bg-secondary animate-pulse mr-2"></span>
-          Live Monitoring
+          {contractFilter ? 'Filtered View' : 'Live Monitoring'}
         </div>
       </div>
       <div 
         ref={terminalRef}
-        className="terminal h-64 p-1 text-sm overflow-auto"
+        className={`terminal ${compact ? 'h-48' : 'h-64'} p-1 text-sm overflow-auto`}
         onScroll={(e) => {
           const target = e.target as HTMLDivElement;
           const isScrolledToBottom = 

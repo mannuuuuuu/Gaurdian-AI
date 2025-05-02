@@ -2,8 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { getActiveAlerts } from "@/lib/blockchain";
 import { formatSeverity } from "@/lib/groq";
 import { Button } from "@/components/ui/button";
+import { Alert } from "@shared/schema";
 
-const AIAlertPanel = () => {
+interface AIAlertPanelProps {
+  fullSize?: boolean;
+}
+
+const AIAlertPanel = ({ fullSize = false }: AIAlertPanelProps) => {
   const { data: alerts, isLoading } = useQuery({
     queryKey: ['/api/alerts/active'],
     queryFn: getActiveAlerts
@@ -24,7 +29,7 @@ const AIAlertPanel = () => {
           </div>
         ) : alerts && alerts.length > 0 ? (
           <div className="space-y-4">
-            {alerts.slice(0, 3).map((alert: any) => {
+            {alerts.slice(0, fullSize ? alerts.length : 3).map((alert: Alert) => {
               const severity = formatSeverity(alert.severity);
               
               return (
