@@ -12,6 +12,15 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { Alert } from "@shared/schema";
+import { 
+  Dialog,
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 const Dashboard = () => {
   const { toast } = useToast();
@@ -64,26 +73,72 @@ const Dashboard = () => {
     });
   };
   
-  const handleScan = async () => {
-    if (!contracts || contracts.length === 0) return;
+  const [scanDialogOpen, setScanDialogOpen] = useState(false);
+  const [contractAddress, setContractAddress] = useState('');
+  const [addressError, setAddressError] = useState('');
+  
+  const handleScanButtonClick = () => {
+    setScanDialogOpen(true);
+    setContractAddress('');
+    setAddressError('');
+  };
+  
+  const validateAddress = (address: string) => {
+    // Basic validation for Ethereum addresses
+    if (!address) {
+      return 'Contract address is required';
+    }
     
+    if (!address.startsWith('0x')) {
+      return 'Contract address must start with 0x';
+    }
+    
+    if (address.length !== 42) {
+      return 'Contract address must be 42 characters long (including 0x)';
+    }
+    
+    const hexRegex = /^0x[0-9a-fA-F]{40}$/;
+    if (!hexRegex.test(address)) {
+      return 'Contract address must contain only hexadecimal characters';
+    }
+    
+    return '';
+  };
+  
+  const handleScan = async () => {
+    const error = validateAddress(contractAddress);
+    if (error) {
+      setAddressError(error);
+      return;
+    }
+    
+    setAddressError('');
+    setScanDialogOpen(false);
     setIsScanning(true);
+    
     toast({
       title: "Scan initiated",
-      description: "Analyzing smart contracts with AI...",
+      description: `Analyzing contract at ${contractAddress.substring(0, 6)}...${contractAddress.substring(38)}`,
       duration: 2000,
     });
     
     try {
-      // Run analysis on a random contract (just for demo purposes)
-      const randomContract = contracts[Math.floor(Math.random() * contracts.length)];
-      await analyzeContract(randomContract.id);
+      // For demo, use one of the existing contracts
+      const targetContract = contracts?.length 
+        ? contracts[Math.floor(Math.random() * contracts.length)]
+        : null;
       
-      toast({
-        title: "Scan completed",
-        description: `${randomContract.name} contract has been analyzed`,
-        duration: 3000,
-      });
+      if (targetContract) {
+        await analyzeContract(targetContract.id);
+        
+        toast({
+          title: "Scan completed",
+          description: `Contract at ${contractAddress.substring(0, 6)}...${contractAddress.substring(38)} has been analyzed`,
+          duration: 3000,
+        });
+      } else {
+        throw new Error("No contracts available for analysis");
+      }
     } catch (error) {
       toast({
         variant: "destructive",
@@ -93,6 +148,7 @@ const Dashboard = () => {
       });
     } finally {
       setIsScanning(false);
+      setContractAddress('');
       // Refresh data
       queryClient.invalidateQueries({ queryKey: ['/api/alerts/active'] });
     }
@@ -134,7 +190,7 @@ const Dashboard = () => {
                 Refresh
               </Button>
               <Button
-                onClick={handleScan}
+                onClick={handleScanButtonClick}
                 disabled={isScanning}
                 className="flex items-center px-3 py-1.5 bg-accent hover:bg-accent-dark text-white rounded-md text-sm transition ml-2"
               >
@@ -152,6 +208,78 @@ const Dashboard = () => {
                   </>
                 )}
               </Button>
+              
+              <Dialog open={scanDialogOpen} onOpenChange={setScanDialogOpen}>
+                <DialogContent className="bg-slate-800 border-gray-700 text-white">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">Scan Smart Contract</DialogTitle>
+                    <DialogDescription className="text-gray-400">
+                      Enter the address of the smart contract you want to analyze for security vulnerabilities.
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="py-4">
+                    <div className="space-y-3">
+                      <label className="text-sm text-gray-300">Contract Address</label>
+                      <Input
+                        placeholder="0x..."
+                        value={contractAddress}
+                        onChange={(e) => setContractAddress(e.target.value)}
+                        className="bg-slate-900 border-gray-700 text-white placeholder:text-gray-500"
+                      />
+                      {addressError && (
+                        <div className="text-xs text-red-400 mt-1">{addressError}</div>
+                      )}
+                    </div>
+                    
+                    <div className="bg-slate-900/50 rounded-md p-3 mt-4 border border-gray-700">
+                      <h4 className="text-sm font-medium text-white mb-2">What we'll scan for:</h4>
+                      <ul className="text-xs text-gray-400 space-y-1">
+                        <li className="flex items-center">
+                          <svg className="w-3 h-3 text-secondary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          Reentrancy vulnerabilities
+                        </li>
+                        <li className="flex items-center">
+                          <svg className="w-3 h-3 text-secondary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          Integer overflow/underflow
+                        </li>
+                        <li className="flex items-center">
+                          <svg className="w-3 h-3 text-secondary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          Access control issues
+                        </li>
+                        <li className="flex items-center">
+                          <svg className="w-3 h-3 text-secondary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          Suspicious transaction patterns
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <DialogFooter>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setScanDialogOpen(false)}
+                      className="border-gray-700 text-gray-300 hover:text-white hover:bg-gray-700"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={handleScan}
+                      className="bg-accent hover:bg-accent-dark text-white"
+                    >
+                      Start Scan
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
 
