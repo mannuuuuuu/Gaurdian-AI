@@ -52,7 +52,13 @@ const AIAlertPanel = ({ fullSize = false }: AIAlertPanelProps) => {
                   </div>
                   <div className="mt-3 flex justify-end">
                     <Button 
-                      className={`text-xs text-white bg-${alert.severity === 'HIGH' ? 'alert' : alert.severity === 'MEDIUM' ? 'accent' : 'blue-500'} hover:bg-${alert.severity === 'HIGH' ? 'alert-dark' : alert.severity === 'MEDIUM' ? 'accent-dark' : 'blue-600'} px-2 py-1 rounded`}
+                      variant="ghost"
+                      className={`text-xs text-white px-2 py-1 rounded
+                        ${alert.severity === 'HIGH' 
+                          ? 'bg-alert hover:bg-alert-dark' 
+                          : alert.severity === 'MEDIUM' 
+                            ? 'bg-amber-500 hover:bg-amber-600' 
+                            : 'bg-blue-500 hover:bg-blue-600'}`}
                     >
                       {alert.severity === 'HIGH' ? 'Review Now' : 'Investigate'}
                     </Button>
